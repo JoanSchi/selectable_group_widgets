@@ -57,144 +57,278 @@ class _MyHomePageState extends State<MyHomePage> {
   ComputerComponents singleComputerComponent = ComputerComponents.processor;
   bool assembly = false;
   Axis direction = Axis.horizontal;
+  WrapAlignment alignment = WrapAlignment.start;
+  WrapCrossAlignment crossAlignment = WrapCrossAlignment.center;
+  WrapAlignment runAlignment = WrapAlignment.start;
+
+  bool wrap = true;
 
   @override
   Widget build(BuildContext context) {
     const betweenGroups = 12.0;
     const betweenTitleGroup = 8.0;
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Column(
-        // Column is also a layout widget. It takes a list of children and
-        // arranges them vertically. By default, it sizes itself to fit its
-        // children horizontally, and tries to be as tall as its parent.
-        //
-        // Invoke "debug painting" (press "p" in the console, choose the
-        // "Toggle Debug Paint" action from the Flutter Inspector in Android
-        // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-        // to see the wireframe for each widget.
-        //
-        // Column has various properties to control how it sizes itself and
-        // how it positions its children. Here we use mainAxisAlignment to
-        // center the children vertically; the main axis here is the vertical
-        // axis because Columns are vertical (the cross axis would be
-        // horizontal).
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: ListView(
         children: <Widget>[
+          buildOptions(),
+          const SizedBox(height: 8.0),
           const Text('Material'),
           const SizedBox(
             height: betweenTitleGroup,
           ),
+          Container(
+            color: Colors.amber,
+            height: 500.0,
+            child: UndefinedSelectableGroup(
+              alignment: alignment,
+              crossAlignment: crossAlignment,
+              runAlignment: runAlignment,
+              selectedGroupTheme: SelectedGroupTheme.material,
+              direction: direction,
+              groups: [
+                RadioGroup(
+                    list: [
+                      RadioSelectable<ComputerComponents>(
+                          text: 'Processor',
+                          value: ComputerComponents.processor),
+                      RadioSelectable<ComputerComponents>(
+                          text: 'Memory', value: ComputerComponents.memory),
+                      RadioSelectable<ComputerComponents>(
+                          text: 'Ssd', value: ComputerComponents.ssd),
+                      RadioSelectable<ComputerComponents>(
+                          text: 'Mainboard',
+                          value: ComputerComponents.mainboard),
+                      RadioSelectable<ComputerComponents>(
+                          text: 'Graphic Card',
+                          value: ComputerComponents.graphicCard)
+                    ],
+                    groupValue: singleComputerComponent,
+                    onChange: onChangeComputerComponent),
+                CheckGroup(list: [
+                  CheckSelectable(
+                      identifier: 'assembly', text: 'Assembly', value: assembly)
+                ], onChange: onChangeCheckbox)
+              ],
+              wrap: wrap,
+            ),
+          ),
+          // const SizedBox(
+          //   height: betweenGroups,
+          // ),
+          // const Text('Material Inkwell'),
+          // const SizedBox(
+          //   height: betweenTitleGroup,
+          // ),
+          // UndefinedSelectableGroup(
+          //   direction: direction,
+          //   selectedGroupTheme: SelectedGroupTheme.materialInkWell,
+          //   groups: [
+          //     RadioGroup(
+          //         list: [
+          //           RadioSelectable<ComputerComponents>(
+          //               text: 'Processor', value: ComputerComponents.processor),
+          //           RadioSelectable<ComputerComponents>(
+          //               text: 'Memory', value: ComputerComponents.memory),
+          //           RadioSelectable<ComputerComponents>(
+          //               text: 'Ssd', value: ComputerComponents.ssd),
+          //           RadioSelectable<ComputerComponents>(
+          //               text: 'Mainboard', value: ComputerComponents.mainboard),
+          //           RadioSelectable<ComputerComponents>(
+          //               text: 'Graphic Card',
+          //               value: ComputerComponents.graphicCard)
+          //         ],
+          //         groupValue: singleComputerComponent,
+          //         onChange: onChangeComputerComponent),
+          //     CheckGroup(list: [
+          //       CheckSelectable(
+          //           identifier: 'assembly', text: 'Assembly', value: assembly)
+          //     ], onChange: onChangeCheckbox)
+          //   ],
+          //   wrap: true,
+          // ),
+          // const SizedBox(
+          //   height: betweenGroups,
+          // ),
+          // const Text('Rounded Button'),
+          // const SizedBox(
+          //   height: betweenTitleGroup,
+          // ),
+          // UndefinedSelectableGroup(
+          //   direction: direction,
+          //   selectedGroupTheme: SelectedGroupTheme.button,
+          //   groups: [
+          //     RadioGroup(
+          //         list: [
+          //           RadioSelectable<ComputerComponents>(
+          //               text: 'Processor', value: ComputerComponents.processor),
+          //           RadioSelectable<ComputerComponents>(
+          //               text: 'Memory', value: ComputerComponents.memory),
+          //           RadioSelectable<ComputerComponents>(
+          //               text: 'Ssd', value: ComputerComponents.ssd),
+          //           RadioSelectable<ComputerComponents>(
+          //               text: 'Mainboard', value: ComputerComponents.mainboard),
+          //           RadioSelectable<ComputerComponents>(
+          //               text: 'Graphic Card',
+          //               value: ComputerComponents.graphicCard)
+          //         ],
+          //         groupValue: singleComputerComponent,
+          //         onChange: onChangeComputerComponent),
+          //     CheckGroup(list: [
+          //       CheckSelectable(
+          //           identifier: 'assembly', text: 'Assembly', value: assembly)
+          //     ], onChange: onChangeCheckbox),
+          //   ],
+          //   wrap: wrap,
+          // ),
+        ],
+      ),
+      // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+
+  buildOptions() {
+    return Card(
+        child: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Axis'),
+          Row(children: [
+            Radio<Axis>(
+                value: Axis.horizontal,
+                groupValue: direction,
+                onChanged: (onChangeAxis)),
+            const Text('Horizontal'),
+            Radio<Axis>(
+                value: Axis.vertical,
+                groupValue: direction,
+                onChanged: onChangeAxis),
+            const Text('Vertical')
+          ]),
+          const Text('Wrap (No wrap is flex)'),
+          Row(children: [
+            Checkbox(
+              value: wrap,
+              onChanged: onChangeWrap,
+            ),
+            const Text('Wrap')
+          ]),
+          const Text('Alignment'),
           UndefinedSelectableGroup(
             selectedGroupTheme: SelectedGroupTheme.material,
-            direction: direction,
+            direction: Axis.horizontal,
+            directionMaxWidgets: 2,
+            alignment: WrapAlignment.start,
+            crossAlignment: WrapCrossAlignment.start,
+            runAlignment: WrapAlignment.start,
             groups: [
-              RadioGroup(
-                  list: [
-                    RadioSelectable<ComputerComponents>(
-                        text: 'Processor', value: ComputerComponents.processor),
-                    RadioSelectable<ComputerComponents>(
-                        text: 'Memory', value: ComputerComponents.memory),
-                    RadioSelectable<ComputerComponents>(
-                        text: 'Ssd', value: ComputerComponents.ssd),
-                    RadioSelectable<ComputerComponents>(
-                        text: 'Mainboard', value: ComputerComponents.mainboard),
-                    RadioSelectable<ComputerComponents>(
-                        text: 'Graphic Card',
-                        value: ComputerComponents.graphicCard)
-                  ],
-                  groupValue: singleComputerComponent,
-                  onChange: onChangeComputerComponent),
-              CheckGroup(list: [
-                CheckSelectable(
-                    identifier: 'assembly', text: 'Assembly', value: assembly)
-              ], onChange: onChangeCheckbox)
+              RadioGroup(list: [
+                RadioSelectable<WrapAlignment>(
+                    text: 'Start', value: WrapAlignment.start),
+                RadioSelectable<WrapAlignment>(
+                    text: 'Center', value: WrapAlignment.center),
+                RadioSelectable<WrapAlignment>(
+                    text: 'End', value: WrapAlignment.end),
+                RadioSelectable<WrapAlignment>(
+                    text: 'SpaceAround', value: WrapAlignment.spaceAround),
+                RadioSelectable<WrapAlignment>(
+                    text: 'SpaceBetween', value: WrapAlignment.spaceBetween),
+                RadioSelectable<WrapAlignment>(
+                    text: 'SpaceEvenly', value: WrapAlignment.spaceEvenly),
+              ], groupValue: alignment, onChange: onChangeAlignment),
             ],
             wrap: true,
           ),
-          const SizedBox(
-            height: betweenGroups,
-          ),
-          const Text('Material Inkwell'),
-          const SizedBox(
-            height: betweenTitleGroup,
-          ),
+          const Text('CrossAlignment'),
           UndefinedSelectableGroup(
-            direction: direction,
-            selectedGroupTheme: SelectedGroupTheme.materialInkWell,
+            selectedGroupTheme: SelectedGroupTheme.material,
+            direction: Axis.horizontal,
+            directionMaxWidgets: 2,
+            alignment: WrapAlignment.start,
+            crossAlignment: WrapCrossAlignment.start,
+            runAlignment: WrapAlignment.start,
             groups: [
-              RadioGroup(
-                  list: [
-                    RadioSelectable<ComputerComponents>(
-                        text: 'Processor', value: ComputerComponents.processor),
-                    RadioSelectable<ComputerComponents>(
-                        text: 'Memory', value: ComputerComponents.memory),
-                    RadioSelectable<ComputerComponents>(
-                        text: 'Ssd', value: ComputerComponents.ssd),
-                    RadioSelectable<ComputerComponents>(
-                        text: 'Mainboard', value: ComputerComponents.mainboard),
-                    RadioSelectable<ComputerComponents>(
-                        text: 'Graphic Card',
-                        value: ComputerComponents.graphicCard)
-                  ],
-                  groupValue: singleComputerComponent,
-                  onChange: onChangeComputerComponent),
-              CheckGroup(list: [
-                CheckSelectable(
-                    identifier: 'assembly', text: 'Assembly', value: assembly)
-              ], onChange: onChangeCheckbox)
+              RadioGroup(list: [
+                RadioSelectable<WrapCrossAlignment>(
+                    text: 'Start', value: WrapCrossAlignment.start),
+                RadioSelectable<WrapCrossAlignment>(
+                    text: 'Center', value: WrapCrossAlignment.center),
+                RadioSelectable<WrapCrossAlignment>(
+                    text: 'End', value: WrapCrossAlignment.end),
+              ], groupValue: crossAlignment, onChange: onChangeCrossAlignment),
             ],
             wrap: true,
           ),
-          const SizedBox(
-            height: betweenGroups,
-          ),
-          const Text('Rounded Button'),
-          const SizedBox(
-            height: betweenTitleGroup,
-          ),
+          const Text('RunAlignment'),
           UndefinedSelectableGroup(
-            direction: direction,
-            selectedGroupTheme: SelectedGroupTheme.button,
+            selectedGroupTheme: SelectedGroupTheme.material,
+            direction: Axis.horizontal,
+            directionMaxWidgets: 2,
+            alignment: WrapAlignment.start,
+            crossAlignment: WrapCrossAlignment.start,
+            runAlignment: WrapAlignment.start,
             groups: [
-              RadioGroup(
-                  list: [
-                    RadioSelectable<ComputerComponents>(
-                        text: 'Processor', value: ComputerComponents.processor),
-                    RadioSelectable<ComputerComponents>(
-                        text: 'Memory', value: ComputerComponents.memory),
-                    RadioSelectable<ComputerComponents>(
-                        text: 'Ssd', value: ComputerComponents.ssd),
-                    RadioSelectable<ComputerComponents>(
-                        text: 'Mainboard', value: ComputerComponents.mainboard),
-                    RadioSelectable<ComputerComponents>(
-                        text: 'Graphic Card',
-                        value: ComputerComponents.graphicCard)
-                  ],
-                  groupValue: singleComputerComponent,
-                  onChange: onChangeComputerComponent),
-              CheckGroup(list: [
-                CheckSelectable(
-                    identifier: 'assembly', text: 'Assembly', value: assembly)
-              ], onChange: onChangeCheckbox),
+              RadioGroup(list: [
+                RadioSelectable<WrapAlignment>(
+                    text: 'Start', value: WrapAlignment.start),
+                RadioSelectable<WrapAlignment>(
+                    text: 'Center', value: WrapAlignment.center),
+                RadioSelectable<WrapAlignment>(
+                    text: 'End', value: WrapAlignment.end),
+                RadioSelectable<WrapAlignment>(
+                    text: 'SpaceAround', value: WrapAlignment.spaceAround),
+                RadioSelectable<WrapAlignment>(
+                    text: 'SpaceBetween', value: WrapAlignment.spaceBetween),
+                RadioSelectable<WrapAlignment>(
+                    text: 'SpaceEvenly', value: WrapAlignment.spaceEvenly),
+              ], groupValue: runAlignment, onChange: onChangeRunAlignment),
             ],
             wrap: true,
           ),
         ],
       ),
-      // This trailing comma makes auto-formatting nicer for build methods.
-    );
+    ));
+  }
+
+  onChangeAlignment(WrapAlignment? value) {
+    if (value == null) return;
+    setState(() {
+      alignment = value;
+    });
+  }
+
+  onChangeCrossAlignment(WrapCrossAlignment? value) {
+    if (value == null) return;
+    setState(() {
+      crossAlignment = value;
+    });
+  }
+
+  onChangeRunAlignment(WrapAlignment? value) {
+    if (value == null) return;
+    setState(() {
+      runAlignment = value;
+    });
+  }
+
+  onChangeAxis(Axis? value) {
+    if (value == null) return;
+    setState(() {
+      direction = value;
+    });
+  }
+
+  onChangeWrap(bool? value) {
+    if (value == null) return;
+    setState(() {
+      print('value $value');
+      wrap = value;
+    });
   }
 
   onChangeComputerComponent(ComputerComponents? value) {

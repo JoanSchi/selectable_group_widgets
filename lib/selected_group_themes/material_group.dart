@@ -56,6 +56,8 @@ class MaterialSelectableCheckBox extends StatelessWidget {
   final ValueChanged<bool?> onChange;
   final bool value;
   final bool enabled;
+  final Color? primaryColor;
+  final Color? onPrimaryColor;
   final Color? disabledColor;
 
   const MaterialSelectableCheckBox({
@@ -64,6 +66,8 @@ class MaterialSelectableCheckBox extends StatelessWidget {
     required this.onChange,
     required this.value,
     this.enabled = true,
+    this.primaryColor,
+    this.onPrimaryColor,
     this.disabledColor,
   }) : super(key: key);
 
@@ -80,6 +84,7 @@ class MaterialSelectableCheckBox extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Checkbox(
+            checkColor: primaryColor,
             value: value,
             onChanged: enabled ? onChange : null,
           ),

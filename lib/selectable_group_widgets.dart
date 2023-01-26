@@ -222,6 +222,10 @@ class UndefinedSelectableGroup extends StatelessWidget {
   final SelectedGroupTheme selectedGroupTheme;
   final int directionMaxWidgets;
   final Axis direction;
+  final WrapAlignment alignment;
+  final WrapCrossAlignment crossAlignment;
+  final WrapAlignment runAlignment;
+  // final MainAxisSize mainAxisSize;
 
   const UndefinedSelectableGroup(
       {Key? key,
@@ -229,6 +233,9 @@ class UndefinedSelectableGroup extends StatelessWidget {
       required this.wrap,
       this.directionMaxWidgets = -1,
       required this.direction,
+      this.alignment = WrapAlignment.center,
+      this.runAlignment = WrapAlignment.center,
+      this.crossAlignment = WrapCrossAlignment.start,
       this.selectedGroupTheme = SelectedGroupTheme.material})
       : super(key: key);
 
@@ -239,19 +246,30 @@ class UndefinedSelectableGroup extends StatelessWidget {
         ...group.buildChildren(context, selectedGroupTheme)
     ];
 
-    return wrap
-        ? SelectableGroupLayout(
-            directionMaxWidgets: directionMaxWidgets,
-            direction: direction,
-            alignment: WrapAlignment.center,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            runSpacing: 0.0,
-            children: children,
-          )
-        : Flex(
-            direction: direction,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: children,
-          );
+    return SelectableGroupLayout(
+      wrap: wrap,
+      directionMaxWidgets: directionMaxWidgets,
+      direction: direction,
+      alignment: alignment,
+      crossAxisAlignment: crossAlignment,
+      runAlignment: runAlignment,
+      runSpacing: 0.0,
+      children: children,
+    );
+
+    // return wrap
+    //     ? SelectableGroupLayout(
+    //         directionMaxWidgets: directionMaxWidgets,
+    //         direction: direction,
+    //         alignment: WrapAlignment.center,
+    //         crossAxisAlignment: WrapCrossAlignment.center,
+    //         runSpacing: 0.0,
+    //         children: children,
+    //       )
+    //     : Flex(
+    //         direction: direction,
+    //         crossAxisAlignment: CrossAxisAlignment.stretch,
+    //         children: children,
+    //       );
   }
 }

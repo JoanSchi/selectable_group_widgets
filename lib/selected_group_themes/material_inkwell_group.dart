@@ -64,6 +64,8 @@ class MaterialInkWellSelectableCheckBox extends StatelessWidget {
   final ValueChanged<bool?> onChange;
   final bool value;
   final bool enabled;
+  final Color? primaryColor;
+  final Color? onPrimaryColor;
   final Color? disabledColor;
 
   const MaterialInkWellSelectableCheckBox({
@@ -71,6 +73,8 @@ class MaterialInkWellSelectableCheckBox extends StatelessWidget {
     required this.text,
     required this.onChange,
     required this.value,
+    this.primaryColor,
+    this.onPrimaryColor,
     this.disabledColor,
     this.enabled = true,
   }) : super(key: key);
@@ -78,13 +82,21 @@ class MaterialInkWellSelectableCheckBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    final primaryColor = this.primaryColor ?? theme.colorScheme.primary;
+    // final onPrimaryColor =
+    //     this.onPrimaryColor ?? theme.colorScheme.onPrimaryContainer;
+
     final textStyle = TextStyle(
         color: enabled ? null : (disabledColor ?? theme.disabledColor));
 
+    final splashColor = primaryColor.withOpacity(0.2);
+    final highlightColor = primaryColor.withOpacity(0.2);
+
     return InkWell2(
         borderRadius: BorderRadius.circular(16.0),
-        splashColor: Colors.blue.withOpacity(0.2),
-        highlightColor: Colors.blue.withOpacity(0.2),
+        splashColor: splashColor,
+        highlightColor: highlightColor,
         onTap: enabled
             ? () {
                 onChange(!value);

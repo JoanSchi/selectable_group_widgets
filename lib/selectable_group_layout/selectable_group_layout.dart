@@ -53,6 +53,7 @@ class SelectableGroupLayout extends MultiChildRenderObjectWidget {
     super.key,
     required this.direction,
     required this.alignment,
+    required this.runAlignment,
     required this.crossAxisAlignment,
     this.stretch = false,
     this.directionMaxWidgets = -1,
@@ -65,6 +66,7 @@ class SelectableGroupLayout extends MultiChildRenderObjectWidget {
 
   final Axis direction;
   final WrapAlignment alignment;
+  final WrapAlignment runAlignment;
   final WrapCrossAlignment crossAxisAlignment;
   final bool stretch;
   final double runSpacing;
@@ -77,7 +79,9 @@ class SelectableGroupLayout extends MultiChildRenderObjectWidget {
   RenderSelectableGroupLayout createRenderObject(BuildContext context) {
     return RenderSelectableGroupLayout(
         direction: direction,
+        wrap: wrap,
         alignment: alignment,
+        runAlignment: runAlignment,
         runSpacing: runSpacing,
         crossAxisAlignment: crossAxisAlignment,
         textDirection: textDirection ?? Directionality.maybeOf(context),
@@ -89,7 +93,9 @@ class SelectableGroupLayout extends MultiChildRenderObjectWidget {
       BuildContext context, RenderSelectableGroupLayout renderObject) {
     renderObject
       ..direction = direction
+      ..wrap = wrap
       ..alignment = alignment
+      ..runAlignment = runAlignment
       ..crossAxisAlignment = crossAxisAlignment
       ..runSpacing = runSpacing
       ..textDirection = textDirection ?? Directionality.maybeOf(context)
@@ -140,7 +146,7 @@ class RenderSelectableGroupLayout extends RenderBox
     if (_wrap == value) {
       return;
     }
-    _wrap = wrap;
+    _wrap = value;
     markNeedsLayout();
   }
 
@@ -898,7 +904,8 @@ class RenderSelectableGroupLayout extends RenderBox
     }
 
     double mainAxisExtent = 0.0;
-    // double crossAxisExtent = 0.0;
+
+    double crossAxisExtent = 0.0;
     // double runMainAxisExtent = 0.0;
     // double runCrossAxisExtent = 0.0;
     int childCount = 0;
@@ -918,6 +925,9 @@ class RenderSelectableGroupLayout extends RenderBox
       // final double childCrossAxisExtent = _getCrossAxisExtent(child.size);
 
       mainAxisExtent += childMainAxisExtent + runSpacing;
+      crossAxisExtent =
+          math.max(crossAxisExtent, _getCrossAxisExtent(child.size));
+
       // final runCrossAxisExtent = childCrossAxisExtent + parentData.spacing;
 
       // crossAxisExtent = math.max(runCrossAxisExtent, crossAxisExtent);
@@ -930,71 +940,67 @@ class RenderSelectableGroupLayout extends RenderBox
 
     switch (direction) {
       case Axis.horizontal:
+        size = constraints.constrain(Size(mainAxisExtent, crossAxisExtent));
         containerMainAxisExtent = size.width;
         containerCrossAxisExtent = size.height;
-        size = constraints
-            .constrain(Size(mainAxisExtent, containerCrossAxisExtent));
         break;
       case Axis.vertical:
+        size = constraints.constrain(Size(crossAxisExtent, mainAxisExtent));
         containerMainAxisExtent = size.height;
         containerCrossAxisExtent = size.width;
+        break;
+    }
+
+    _hasVisualOverflow = containerMainAxisExtent < mainAxisExtent;
+
+    double childBetweenSpace = 0.0;
+    double childLeadingSpace = 0.0;
+
+    MainAxisSize mainAxisSize = MainAxisSize.max;
+
+    if (mainAxisSize == MainAxisSize.max) {
+      double mainAxisFreeSpace = containerMainAxisExtent - mainAxisExtent;
+
+      if (mainAxisExtent < containerCrossAxisExtent) {
+        switch (alignment) {
+          case WrapAlignment.start:
+            break;
+          case WrapAlignment.end:
+            childLeadingSpace = mainAxisFreeSpace;
+            break;
+          case WrapAlignment.center:
+            childLeadingSpace = mainAxisFreeSpace / 2.0;
+            break;
+          case WrapAlignment.spaceBetween:
+            childBetweenSpace =
+                childCount > 1 ? mainAxisFreeSpace / (childCount - 1) : 0.0;
+            break;
+          case WrapAlignment.spaceAround:
+            childBetweenSpace = mainAxisFreeSpace / childCount;
+            childLeadingSpace = childBetweenSpace / 2.0;
+            break;
+          case WrapAlignment.spaceEvenly:
+            childBetweenSpace = mainAxisFreeSpace / (childCount + 1);
+            childLeadingSpace = childBetweenSpace;
+            break;
+        }
+      }
+    }
+
+    switch (direction) {
+      case Axis.horizontal:
+        size = constraints.constrain(Size(mainAxisExtent, 56));
+        break;
+      case Axis.vertical:
         size = constraints
             .constrain(Size(containerCrossAxisExtent, mainAxisExtent));
         break;
     }
 
-    _hasVisualOverflow = containerMainAxisExtent < mainAxisExtent;
-    //  || containerCrossAxisExtent < crossAxisExtent;
-
-    containerCrossAxisExtent = size.height;
-
-    double mainAxisFreeSpace = containerMainAxisExtent - mainAxisExtent;
-    double childBetweenSpace = 0.0;
-    double childLeadingSpace = 0.0;
-
-    switch (alignment) {
-      case WrapAlignment.start:
-        break;
-      case WrapAlignment.end:
-        childLeadingSpace = mainAxisFreeSpace;
-        break;
-      case WrapAlignment.center:
-        childLeadingSpace = mainAxisFreeSpace / 2.0;
-        break;
-      case WrapAlignment.spaceBetween:
-        childBetweenSpace =
-            childCount > 1 ? mainAxisFreeSpace / (childCount - 1) : 0.0;
-        break;
-      case WrapAlignment.spaceAround:
-        childBetweenSpace = mainAxisFreeSpace / childCount;
-        childLeadingSpace = childBetweenSpace / 2.0;
-        break;
-      case WrapAlignment.spaceEvenly:
-        childBetweenSpace = mainAxisFreeSpace / (childCount + 1);
-        childLeadingSpace = childBetweenSpace;
-        break;
-    }
-
-    // double runAxisFreeSpace = containerCrossAxisExtent - crossAxisExtent;
-    // double runLeadingSpace = 0.0;
-
-    // switch (runAlignment) {
-    //   case WrapAlignment.start:
-    //     break;
-    //   case WrapAlignment.end:
-    //     runLeadingSpace = runAxisFreeSpace;
-    //     break;
-    //   case WrapAlignment.center:
-    //     runLeadingSpace = runAxisFreeSpace / 2.0;
-    //     break;
-    //   case WrapAlignment.spaceBetween:
-    //   case WrapAlignment.spaceAround:
-    //   case WrapAlignment.spaceEvenly:
-    //     break;
-    // }
-
     double crossAxisOffset = 0.0;
     double childMainPosition = childLeadingSpace;
+
+    child = firstChild;
 
     while (child != null) {
       final SelectableGroupParentData parentData =
@@ -1015,7 +1021,7 @@ class RenderSelectableGroupLayout extends RenderBox
       childMainPosition += childMainAxisExtent + childBetweenSpace + spacing;
       // }
 
-      childMainPosition += childMainAxisExtent + spacing;
+      child = parentData.nextSibling;
     }
   }
 
