@@ -1,8 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
-import 'dart:math' as math;
 
 class SelectableGroupParentData extends ContainerBoxParentData<RenderBox> {
   double spacing = 0.0;
@@ -62,6 +63,7 @@ class SelectableGroupLayout extends MultiChildRenderObjectWidget {
     super.children,
     this.wrap = false,
     this.clipBehavior = Clip.none,
+    this.dynamicMaxRuns = const [],
   });
 
   final Axis direction;
@@ -74,6 +76,7 @@ class SelectableGroupLayout extends MultiChildRenderObjectWidget {
   final TextDirection? textDirection;
   final bool wrap;
   final Clip clipBehavior;
+  final List<DynamicMaxRun> dynamicMaxRuns;
 
   @override
   RenderSelectableGroupLayout createRenderObject(BuildContext context) {
@@ -85,7 +88,9 @@ class SelectableGroupLayout extends MultiChildRenderObjectWidget {
         runSpacing: runSpacing,
         crossAxisAlignment: crossAxisAlignment,
         textDirection: textDirection ?? Directionality.maybeOf(context),
-        clipBehavior: clipBehavior);
+        clipBehavior: clipBehavior,
+        directionMaxChildCount: directionMaxWidgets,
+        dynamicMaxRuns: dynamicMaxRuns);
   }
 
   @override
@@ -100,7 +105,8 @@ class SelectableGroupLayout extends MultiChildRenderObjectWidget {
       ..runSpacing = runSpacing
       ..textDirection = textDirection ?? Directionality.maybeOf(context)
       ..directionMaxChildCount = directionMaxWidgets
-      ..clipBehavior = clipBehavior;
+      ..clipBehavior = clipBehavior
+      ..dynamicMaxRuns = dynamicMaxRuns;
   }
 }
 
@@ -125,6 +131,7 @@ class RenderSelectableGroupLayout extends RenderBox
     Clip clipBehavior = Clip.none,
     int directionMaxChildCount = -1,
     bool wrap = true,
+    List<DynamicMaxRun> dynamicMaxRuns = const [],
   })  : _direction = direction,
         _alignment = alignment,
         _spacing = spacing,
@@ -135,8 +142,20 @@ class RenderSelectableGroupLayout extends RenderBox
         _verticalDirection = verticalDirection,
         _clipBehavior = clipBehavior,
         _directionMaxChildCount = directionMaxChildCount,
-        _wrap = wrap {
+        _wrap = wrap,
+        _dynamicMaxRuns = dynamicMaxRuns {
     addAll(children);
+  }
+
+  List<DynamicMaxRun> get dynamicMaxRuns => _dynamicMaxRuns;
+
+  List<DynamicMaxRun> _dynamicMaxRuns;
+  set dynamicMaxRuns(List<DynamicMaxRun> value) {
+    if (_dynamicMaxRuns == value) {
+      return;
+    }
+    _dynamicMaxRuns = value;
+    markNeedsLayout();
   }
 
   bool get wrap => _wrap;
@@ -574,6 +593,28 @@ class RenderSelectableGroupLayout extends RenderBox
     double runCrossAxisExtent = 0.0;
     int childCount = 0;
     RenderBox? child = firstChild;
+
+    List<int> dynamicMaxRunNumbers = const [];
+    int dynamicRunIndex = 0;
+    int dynamicRunCount = 0;
+    int dynamicDirectionMaxChildCount = directionMaxChildCount;
+
+    if (dynamicMaxRuns.isNotEmpty) {
+      for (DynamicMaxRun dmr in dynamicMaxRuns) {
+        if (dmr.maxAxisLimit <= mainAxisLimit) {
+          dynamicMaxRunNumbers = dmr.numberList;
+        } else {
+          break;
+        }
+      }
+
+      dynamicRunCount = dynamicMaxRunNumbers.length;
+
+      if (dynamicRunCount > 0) {
+        dynamicDirectionMaxChildCount = dynamicMaxRunNumbers[dynamicRunIndex++];
+      }
+    }
+
     while (child != null) {
       final childParentData = child.parentData as SelectableGroupParentData;
       final spacing = childParentData.spacing;
@@ -583,12 +624,17 @@ class RenderSelectableGroupLayout extends RenderBox
       // There must be at least one child before we move on to the next run.
       if (childCount > 0 &&
           (runMainAxisExtent + childMainAxisExtent + spacing > mainAxisLimit ||
-              childCount == directionMaxChildCount)) {
+              childCount == dynamicDirectionMaxChildCount)) {
         mainAxisExtent = math.max(mainAxisExtent, runMainAxisExtent);
         crossAxisExtent += runCrossAxisExtent + runSpacing;
         runMainAxisExtent = 0.0;
         runCrossAxisExtent = 0.0;
         childCount = 0;
+
+        if (dynamicRunIndex < dynamicRunCount) {
+          dynamicDirectionMaxChildCount =
+              dynamicMaxRunNumbers[dynamicRunIndex++];
+        }
       }
       runMainAxisExtent += childMainAxisExtent;
       runCrossAxisExtent = math.max(runCrossAxisExtent, childCrossAxisExtent);
@@ -713,6 +759,27 @@ class RenderSelectableGroupLayout extends RenderBox
     double runCrossAxisExtent = 0.0;
     int childCount = 0;
 
+    List<int> dynamicMaxRunNumbers = const [];
+    int dynamicRunIndex = 0;
+    int dynamicRunCount = 0;
+    int dynamicDirectionMaxChildCount = directionMaxChildCount;
+
+    if (dynamicMaxRuns.isNotEmpty) {
+      for (DynamicMaxRun dmr in dynamicMaxRuns) {
+        if (dmr.maxAxisLimit <= mainAxisLimit) {
+          dynamicMaxRunNumbers = dmr.numberList;
+        } else {
+          break;
+        }
+      }
+
+      dynamicRunCount = dynamicMaxRunNumbers.length;
+
+      if (dynamicRunCount > 0) {
+        dynamicDirectionMaxChildCount = dynamicMaxRunNumbers[dynamicRunIndex++];
+      }
+    }
+
     while (child != null) {
       final SelectableGroupParentData parentData =
           child.parentData as SelectableGroupParentData;
@@ -724,7 +791,7 @@ class RenderSelectableGroupLayout extends RenderBox
       final double childCrossAxisExtent = _getCrossAxisExtent(child.size);
       if (childCount > 0 &&
           (runMainAxisExtent + spacing + childMainAxisExtent > mainAxisLimit ||
-              childCount == directionMaxChildCount)) {
+              childCount == dynamicDirectionMaxChildCount)) {
         mainAxisExtent = math.max(mainAxisExtent, runMainAxisExtent);
         crossAxisExtent += runCrossAxisExtent;
 
@@ -736,6 +803,11 @@ class RenderSelectableGroupLayout extends RenderBox
         runMainAxisExtent = 0.0;
         runCrossAxisExtent = 0.0;
         childCount = 0;
+
+        if (dynamicRunIndex < dynamicRunCount) {
+          dynamicDirectionMaxChildCount =
+              dynamicMaxRunNumbers[dynamicRunIndex++];
+        }
       }
       runMainAxisExtent += childMainAxisExtent;
 
@@ -931,7 +1003,7 @@ class RenderSelectableGroupLayout extends RenderBox
       // final runCrossAxisExtent = childCrossAxisExtent + parentData.spacing;
 
       // crossAxisExtent = math.max(runCrossAxisExtent, crossAxisExtent);
-
+      childCount++;
       child = parentData.nextSibling;
     }
 
@@ -1034,19 +1106,46 @@ class RenderSelectableGroupLayout extends RenderBox
   void paint(PaintingContext context, Offset offset) {
     // TODO(ianh): move the debug flex overflow paint logic somewhere common so
     // it can be reused here
-    if (_hasVisualOverflow && clipBehavior != Clip.none) {
+
+    Clip clip = _hasVisualOverflow && clipBehavior == Clip.none
+        ? Clip.hardEdge
+        : clipBehavior;
+
+    if (clip != Clip.none) {
       _clipRectLayer.layer = context.pushClipRect(
         needsCompositing,
         offset,
         Offset.zero & size,
         defaultPaint,
-        clipBehavior: clipBehavior,
+        clipBehavior: clip,
         oldLayer: _clipRectLayer.layer,
       );
     } else {
       _clipRectLayer.layer = null;
       defaultPaint(context, offset);
     }
+
+    assert(() {
+      if (_hasVisualOverflow) {
+        const overflowIndicator = 10.0;
+
+        final w = size.width;
+        final h = size.height;
+        Rect rect;
+
+        if (direction == Axis.horizontal) {
+          rect = Rect.fromLTWH(offset.dx + w - overflowIndicator, offset.dy,
+              overflowIndicator, h);
+        } else {
+          rect = Rect.fromLTWH(offset.dx, offset.dy + h - overflowIndicator, w,
+              overflowIndicator);
+        }
+
+        Paint paint = Paint()..color = const Color.fromARGB(255, 244, 67, 54);
+        context.canvas.drawRect(rect, paint);
+      }
+      return true;
+    }());
   }
 
   final LayerHandle<ClipRectLayer> _clipRectLayer =
@@ -1081,4 +1180,25 @@ class _RunMetrics {
   final double mainAxisExtent;
   final double crossAxisExtent;
   final int childCount;
+}
+
+class DynamicMaxRun {
+  final double maxAxisLimit;
+  final List<int> numberList;
+
+  const DynamicMaxRun({
+    required this.maxAxisLimit,
+    required this.numberList,
+  });
+
+  @override
+  bool operator ==(covariant DynamicMaxRun other) {
+    if (identical(this, other)) return true;
+
+    return other.maxAxisLimit == maxAxisLimit &&
+        listEquals(other.numberList, numberList);
+  }
+
+  @override
+  int get hashCode => maxAxisLimit.hashCode ^ numberList.hashCode;
 }
