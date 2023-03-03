@@ -14,7 +14,10 @@ typedef CheckedValueChanged<T> = void Function(T identifier, bool value);
 abstract class SelectableGroup<O> {
   SelectableGroup();
 
-  List<Widget> buildChildren(BuildContext context, O options);
+  List<Widget> buildChildren(
+    BuildContext context,
+    O options,
+  );
 }
 
 class RadioSelectable<V> {
@@ -57,7 +60,7 @@ abstract class RadioGroup<V, O> extends SelectableGroup<O> {
 
 abstract class CheckGroup<V, O> extends SelectableGroup<O> {
   final List<CheckSelectable<V>> list;
-  final CheckedValueChanged onChange;
+  final CheckedValueChanged<V> onChange;
   final bool enabled;
 
   CheckGroup({required this.list, required this.onChange, this.enabled = true});
