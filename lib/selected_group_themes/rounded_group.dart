@@ -37,8 +37,7 @@ class SelectedButton<T> extends StatelessWidget {
     final theme = Theme.of(context);
 
     final primaryColor = this.primaryColor ?? theme.colorScheme.primary;
-    final onPrimaryColor =
-        this.onPrimaryColor ?? theme.colorScheme.onPrimaryContainer;
+    final onPrimaryColor = this.onPrimaryColor ?? theme.colorScheme.onPrimary;
 
     final disabledColor = this.disabledColor ?? theme.disabledColor;
 

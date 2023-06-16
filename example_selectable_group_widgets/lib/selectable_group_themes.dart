@@ -120,6 +120,7 @@ class MyCheckGroup<V> extends CheckGroup<V, SelectableGroupOptions> {
                 value: s.value,
                 primaryColor: primaryColor,
                 onPrimaryColor: onPrimaryColor,
+                enabled: s.enabled,
               )
           ];
         }
@@ -133,6 +134,7 @@ class MyCheckGroup<V> extends CheckGroup<V, SelectableGroupOptions> {
                 value: s.value,
                 primaryColor: primaryColor,
                 onPrimaryColor: onPrimaryColor,
+                enabled: s.enabled,
               )
           ];
         }
